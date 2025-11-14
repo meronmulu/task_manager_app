@@ -12,32 +12,16 @@ class AuthApiService {
     ),
   );
 
-  Future<AuthModel> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await _dio.post(
-        '/login',
-        data: {'email': email, 'password': password},
+        "${ApiConfig.baseUrl}/users/login",
+        data: {"email": email, "password": password},
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final userJson = data['data'];
-        final token = data['token'];
-
-        final user = AuthModel.fromJson(userJson);
-
-        return user;
-      } else {
-        throw Exception("Login failed: ${response.statusMessage}");
-      }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        throw Exception(
-          "Login failed: ${e.response?.data['message'] ?? e.response?.statusMessage}",
-        );
-      } else {
-        throw Exception("Network error: ${e.message}");
-      }
+      return response.data;
+    } catch (e) {
+      throw Exception("Login failed: $e");
     }
   }
 

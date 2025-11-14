@@ -49,12 +49,7 @@ class _UsersPageState extends State<UsersPage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: context.read<AuthBloc>(),
-                              child: const UsersAdd(),
-                            ),
-                          ),
+                          MaterialPageRoute(builder: (_) => const UsersAdd()),
                         );
                       },
                       child: const Text("Add User"),

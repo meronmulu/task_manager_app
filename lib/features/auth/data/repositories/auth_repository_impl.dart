@@ -10,11 +10,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthEntities> login(String email, String password) async {
-    try {
-      final AuthModel user = await remoteService.login(email, password);
-      return user;
-    } catch (e) {
-      throw Exception("Repositiry error:  $e");
+    final result = await remoteService.login(email, password);
+
+    if (result["success"] == true) {
+      return AuthModel.fromJson(
+        result["user"]..addAll({"token": result["token"]}),
+      );
+    } else {
+      throw Exception(result["message"] ?? "Login failed");
     }
   }
 

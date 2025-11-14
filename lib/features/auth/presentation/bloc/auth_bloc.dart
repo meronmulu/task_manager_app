@@ -1,5 +1,6 @@
 // auth_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_manager_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:task_manager_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:task_manager_app/features/auth/presentation/bloc/auth_state.dart';
@@ -20,6 +21,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     try {
       final user = await repository.login(event.email, event.password);
+
+      // Save token, role, userId
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString("token", user.token ?? "");
+      await prefs.setString("role", user.role);
+      await prefs.setInt("userId", user.userId);
+
       emit(AuthSuccess(user));
     } catch (e) {
       emit(AuthFailure(e.toString()));

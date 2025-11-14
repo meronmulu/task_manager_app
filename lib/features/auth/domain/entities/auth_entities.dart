@@ -6,6 +6,7 @@ class AuthEntities {
   final String role;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? token;
 
   AuthEntities({
     required this.userId,
@@ -15,5 +16,6 @@ class AuthEntities {
     required this.role,
     required this.createdAt,
     required this.updatedAt,
+    this.token,
   });
 }
