@@ -10,8 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  final String dummyEmail = "";
-
   @override
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
@@ -20,7 +18,6 @@ class LoginPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => AuthBloc(AuthRepositoryImpl(AuthApiService())),
       child: Scaffold(
-        appBar: AppBar(title: const Text("Login")),
         body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) async {
             if (state is AuthSuccess) {
