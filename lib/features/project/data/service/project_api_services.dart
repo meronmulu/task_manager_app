@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_manager_app/core/networks/api_config.dart';
 import 'package:task_manager_app/features/project/data/model/project_model.dart';
 
@@ -13,40 +14,82 @@ class ProjectApiService {
   );
 
   // Get all projects (requires token)
-  Future<List<ProjectModel>> getAllProject(String token) async {
-    try {
-      final response = await _dio.get(
-        '/projects',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
+  Future<List<ProjectModel>> getAllProject() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
 
-      if (response.statusCode == 200) {
-        final data = response.data;
+    if (token == null) {
+      throw Exception("Token not found. Please login first!");
+    }
 
-        // Backend wraps projects in 'data' field
-        final List<dynamic> projectList =
-            data is Map<String, dynamic> && data.containsKey('data')
-            ? data['data']
-            : data;
+    final response = await _dio.get(
+      "/projects/projects",
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
 
-        return projectList.map((p) => ProjectModel.fromJson(p)).toList();
-      } else {
-        throw Exception("Failed to fetch projects: ${response.statusMessage}");
-      }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        final message = e.response?.data is Map
-            ? e.response?.data['message'] ?? e.response?.statusMessage
-            : e.response?.statusMessage;
-        throw Exception("Failed: $message");
-      } else {
-        throw Exception("Network error: ${e.message}");
-      }
+    final data = response.data["data"] as List;
+    return data.map((e) => ProjectModel.fromJson(e)).toList();
+  }
+
+  Future<ProjectModel> addProject({
+    required String projectName,
+    required String description,
+    required String status,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Token not found. Please login first!");
+    }
+
+    final response = await _dio.post(
+      "/projects/create-project",
+      data: {
+        "project_name": projectName,
+        "description": description,
+        "status": status,
+      },
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = response.data;
+      final ProjectJson = data is Map<String, dynamic> ? data['data'] : data;
+      return ProjectModel.fromJson(ProjectJson);
+    } else {
+      throw Exception("Failed to add user: ${response.statusMessage}");
+    }
+  }
+
+  Future<ProjectModel> editProject({
+    required int projectId,
+    required String projectName,
+    required String description,
+    required String status,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Token not found. Please login first!");
+    }
+
+    final response = await _dio.put(
+      "/projects/update-project/$projectId",
+      data: {
+        "project_name": projectName,
+        "description": description,
+        "status": status,
+      },
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final ProjectJson = data is Map<String, dynamic> ? data['data'] : data;
+      return ProjectModel.fromJson(ProjectJson);
+    } else {
+      throw Exception("Failed to edit project: ${response.statusMessage}");
     }
   }
 }

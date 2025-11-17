@@ -13,8 +13,8 @@ class ProjectModel extends ProjectEntities {
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
-      projectId: json['projectId'],
-      projectName: json['projectName'],
+      projectId: json['project_id'],
+      projectName: json['project_name'],
       description: json['description'],
       status: json['status'],
       createdById: json['createdById'],
@@ -24,8 +24,8 @@ class ProjectModel extends ProjectEntities {
   }
 
   Map<String, dynamic> toJson() => {
-    "projectId": projectId,
-    "projectName": projectName,
+    "project_id": projectId,
+    "project_name": projectName,
     "description": description,
     "status": status,
     "createdById": createdById,

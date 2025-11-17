@@ -46,11 +46,7 @@ class _UsersAddState extends State<UsersAdd> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Add User"),
-          centerTitle: true,
-          backgroundColor: Colors.blueAccent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.blueAccent),
 
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -58,13 +54,26 @@ class _UsersAddState extends State<UsersAdd> {
             key: _formKey,
             child: SingleChildScrollView(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Name
+                  Text(
+                    "Add User",
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent[700],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                   TextFormField(
                     controller: nameController,
                     decoration: const InputDecoration(
                       labelText: 'Name',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Enter name' : null,
@@ -77,7 +86,11 @@ class _UsersAddState extends State<UsersAdd> {
                     controller: emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                     validator: (value) => value == null || !value.contains('@')
                         ? 'Enter valid email'
@@ -120,6 +133,14 @@ class _UsersAddState extends State<UsersAdd> {
 
                   // Add User Button
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.blueAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 4,
+                    ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
@@ -132,7 +153,14 @@ class _UsersAddState extends State<UsersAdd> {
                         );
                       }
                     },
-                    child: const Text('Add User'),
+                    child: const Text(
+                      'Add User',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),

@@ -28,7 +28,10 @@ class _UsersPageState extends State<UsersPage> {
           AuthBloc(AuthRepositoryImpl(AuthApiService()))..add(FetchAllUsers()),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Users"),
+          title: const Text(
+            "Users",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
           centerTitle: true,
           backgroundColor: Colors.blueAccent,
         ),
@@ -41,68 +44,85 @@ class _UsersPageState extends State<UsersPage> {
               if (state.users.isEmpty) {
                 return const Center(child: Text("No users found."));
               }
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const UsersAdd()),
-                        );
-                      },
-                      child: const Text("Add User"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(12),
-                      itemCount: state.users.length,
-                      itemBuilder: (context, index) {
-                        final user = state.users[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+              return Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          elevation: 4,
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blueAccent,
-                              child: Text(
-                                user.name[0].toUpperCase(),
-                                style: const TextStyle(color: Colors.white),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const UsersAdd(),
                               ),
+                            );
+                          },
+                          child: const Text(
+                            "Add User",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: state.users.length,
+                        itemBuilder: (context, index) {
+                          final user = state.users[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            title: Text(
-                              user.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(user.email),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Role: ${user.role}",
-                                  style: const TextStyle(color: Colors.grey),
+                            elevation: 4,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blueAccent,
+                                child: Text(
+                                  user.name[0].toUpperCase(),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                              ],
+                              ),
+                              title: Text(
+                                user.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(user.email),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Role: ${user.role}",
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
                             ),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             } else if (state is AuthFailure) {
               return Center(
@@ -122,11 +142,7 @@ class _UsersPageState extends State<UsersPage> {
           onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.people), label: "Users"),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: "Settings",
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.people), label: "Proile"),
           ],
         ),
       ),

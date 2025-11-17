@@ -5,6 +5,8 @@ import 'package:task_manager_app/features/auth/presentation/pages/login_page.dar
 import 'package:task_manager_app/features/auth/presentation/pages/manager/manager_home_page.dart';
 import 'package:task_manager_app/features/auth/presentation/pages/users_add.dart';
 import 'package:task_manager_app/features/auth/presentation/pages/users_page.dart';
+import 'package:task_manager_app/features/project/presentation/page/add_project.dart';
+import 'package:task_manager_app/features/project/presentation/page/projects_page.dart';
 
 class AppRoutes {
   static const login = "/login";
@@ -13,6 +15,10 @@ class AppRoutes {
   static const employeeDashboard = "/employee_dashboard";
   static const users = "/users";
   static const addUser = "/add_user";
+  static const editUser = "/edit_user";
+  static const project = "/projects";
+  static const addProject = "/add_project";
+  static const editProject = "/edit_project";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -33,6 +39,12 @@ class AppRoutes {
 
       case addUser:
         return MaterialPageRoute(builder: (_) => const UsersAdd());
+      case editUser:
+        return MaterialPageRoute(builder: (_) => const UsersAdd());
+      case project:
+        return MaterialPageRoute(builder: (_) => const ProjectsPage());
+      case addProject:
+        return MaterialPageRoute(builder: (_) => const ProjectAdd());
 
       default:
         return MaterialPageRoute(

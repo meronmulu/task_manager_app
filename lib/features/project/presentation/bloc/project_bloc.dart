@@ -8,6 +8,8 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
 
   ProjectBloc(this.repository) : super(ProjectIntial()) {
     on<FetchAllProject>(_onFetchAllProject);
+    on<AddProjectRequested>(_onAddProjectRequested);
+    on<EditProjectRequested>(_onEditProjectRequested);
   }
 
   Future<void> _onFetchAllProject(
@@ -18,6 +20,41 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     try {
       final projects = await repository.getAllProject();
       emit(ProjectsLoaded(projects));
+    } catch (e) {
+      emit(ProjectFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onAddProjectRequested(
+    AddProjectRequested event,
+    Emitter<ProjectState> emit,
+  ) async {
+    emit(ProjectLoading());
+    try {
+      final newProject = await repository.addProject(
+        projectName: event.projectName,
+        description: event.description,
+        status: event.status,
+      );
+      emit(ProjectSuccess(newProject));
+    } catch (e) {
+      emit(ProjectFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onEditProjectRequested(
+    EditProjectRequested event,
+    Emitter<ProjectState> emit,
+  ) async {
+    emit(ProjectLoading());
+    try {
+      final updatedProject = await repository.editProject(
+        projectId: event.projectId,
+        projectName: event.projectName,
+        description: event.description,
+        status: event.status,
+      );
+      emit(ProjectSuccess(updatedProject));
     } catch (e) {
       emit(ProjectFailure(e.toString()));
     }

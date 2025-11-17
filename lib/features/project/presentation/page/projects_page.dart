@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:task_manager_app/features/auth/presentation/pages/admin/admin_home_page.dart';
 import 'package:task_manager_app/features/project/data/repositories/project_repository_imp.dart';
 import 'package:task_manager_app/features/project/data/service/project_api_services.dart';
 import 'package:task_manager_app/features/project/presentation/bloc/project_bloc.dart';
 import 'package:task_manager_app/features/project/presentation/bloc/project_event.dart';
 import 'package:task_manager_app/features/project/presentation/bloc/project_state.dart';
+import 'package:task_manager_app/features/project/presentation/page/add_project.dart';
+import 'package:task_manager_app/features/project/presentation/page/edit_project.dart';
 import 'package:task_manager_app/features/tasks/presentation/page/task_page.dart';
 
 class ProjectsPage extends StatefulWidget {
@@ -22,11 +23,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
       create: (_) =>
           ProjectBloc(ProjectRepositoryImp(ProjectApiService()))
             ..add(FetchAllProject()),
-
       child: Scaffold(
-        appBar: AppBar(title: const Text("Task Management"), centerTitle: true),
-
-        // ✅ Body with BlocBuilder — listens to state changes
+        appBar: AppBar(
+          title: const Text("Projects", style: TextStyle(color: Colors.white)),
+          centerTitle: true,
+          backgroundColor: Colors.blueAccent,
+        ),
         body: BlocBuilder<ProjectBloc, ProjectState>(
           builder: (context, state) {
             if (state is ProjectLoading) {
@@ -44,12 +46,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 return const Center(child: Text("No projects found."));
               }
 
-              // ✅ Show project list
               return Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // 🔍 Search bar and Add button
                     Row(
                       children: [
                         Expanded(
@@ -80,12 +80,18 @@ class _ProjectsPageState extends State<ProjectsPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AdminHomePage(),
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<ProjectBloc>(),
+                                  child: const ProjectAdd(),
+                                ),
                               ),
                             );
                           },
                           icon: const Icon(Icons.add, color: Colors.white),
-                          label: const Text('Project'),
+                          label: const Text(
+                            'Project',
+                            style: TextStyle(color: Colors.white),
+                          ),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
@@ -100,8 +106,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-
-                    // 📋 List of Projects
                     Expanded(
                       child: ListView.builder(
                         itemCount: projects.length,
@@ -128,10 +132,29 @@ class _ProjectsPageState extends State<ProjectsPage> {
                                 ),
                               ),
                               subtitle: Text(project.description),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => BlocProvider.value(
+                                        value: context.read<ProjectBloc>(),
+                                        child: EditProject(
+                                          projectId: project.projectId,
+                                          name: project.projectName,
+                                          description: project.description,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Icon(
+                                  Icons.edit,
+                                  size: 20,
+                                  color: Colors.blue,
+                                ),
                               ),
+
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -150,12 +173,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
               );
             }
 
-            // Default fallback (initial state)
             return const Center(child: Text("No projects found."));
           },
         ),
-
-        // 🔘 Bottom Navigation Bar
         bottomNavigationBar: BottomNavigationBar(
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
