@@ -54,7 +54,12 @@ class ProjectRepositoryImp implements ProjectRepository {
   }
 
   @override
-  Future<void> deleteProject(int projectId) {
-    throw UnimplementedError();
+  @override
+  Future<void> deleteProject(int projectId) async {
+    try {
+      await remoteService.deleteProject(projectId: projectId);
+    } catch (e) {
+      throw Exception("Repository error (deleteProject): $e");
+    }
   }
 }

@@ -38,3 +38,12 @@ class EditProjectRequested extends ProjectEvent {
   @override
   List<Object?> get props => [projectId, projectName, description, status];
 }
+
+class DeleteProjectRequested extends ProjectEvent {
+  final int projectId;
+
+  DeleteProjectRequested({required this.projectId});
+
+  @override
+  List<Object?> get props => [projectId];
+}

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:task_manager_app/features/auth/data/service/dashboard_api_service.dart';
 import 'package:task_manager_app/features/auth/presentation/pages/login_page.dart';
 import 'package:task_manager_app/features/auth/presentation/pages/users_page.dart';
+import 'package:task_manager_app/features/project/data/model/project_model.dart';
+import 'package:task_manager_app/features/project/data/service/project_api_services.dart';
 import 'package:task_manager_app/features/project/presentation/page/projects_page.dart';
 import 'package:task_manager_app/features/tasks/presentation/page/task_page.dart';
 
@@ -12,6 +16,50 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
+  int totalProjects = 0;
+  int totalTasks = 0;
+  int totalIssues = 0;
+  bool loadingSummary = true;
+
+  List<ProjectModel> projects = [];
+  bool loadingProjects = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSummary();
+    fetchProjects();
+  }
+
+  void fetchSummary() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
+      final data = await DashboardService().getSummary(token!);
+
+      setState(() {
+        totalProjects = data["totalProjects"];
+        totalTasks = data["totalTasks"];
+        loadingSummary = false;
+      });
+    } catch (e) {
+      print("Summary load error: $e");
+    }
+  }
+
+  void fetchProjects() async {
+    try {
+      final data = await ProjectApiService().getAllProject();
+      setState(() {
+        projects = data;
+        loadingProjects = false;
+      });
+    } catch (e) {
+      print("Project load error: $e");
+    }
+  }
+
   Drawer _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -33,7 +81,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
           ListTile(
             leading: const Icon(Icons.people),
-            title: const Text('Users'),
+            title: const Text("Users"),
             onTap: () {
               Navigator.push(
                 context,
@@ -43,7 +91,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
           ListTile(
             leading: const Icon(Icons.folder),
-            title: const Text('Projects'),
+            title: const Text("Projects"),
             onTap: () {
               Navigator.push(
                 context,
@@ -53,7 +101,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
           ListTile(
             leading: const Icon(Icons.task),
-            title: const Text('Tasks'),
+            title: const Text("Tasks"),
             onTap: () {
               Navigator.push(
                 context,
@@ -63,7 +111,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
+            title: const Text("Logout"),
             onTap: () {
               Navigator.pushReplacement(
                 context,
@@ -76,13 +124,19 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
+  // =============================
+  // SUMMARY CARDS
+  // =============================
   Widget _buildSummaryCards() {
+    if (loadingSummary) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildCard("Users", "15", Icons.people, Colors.blue),
-        _buildCard("Projects", "10", Icons.folder, Colors.green),
-        _buildCard("Tasks", "40", Icons.task, Colors.orange),
+        _buildCard("Projects", "$totalProjects", Icons.folder, Colors.green),
+        _buildCard("Tasks", "$totalTasks", Icons.task, Colors.orange),
       ],
     );
   }
@@ -107,63 +161,54 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
-  Widget _buildUsersList() {
-    final dummyUsers = [
-      {"name": "Meron Mulu", "email": "meron@example.com", "role": "Admin"},
-      {"name": "Amanuel T.", "email": "amanuel@example.com", "role": "Manager"},
-      {"name": "Sara M.", "email": "sara@example.com", "role": "Employee"},
-    ];
+  // =============================
+  // PROJECTS LIST
+  // =============================
+  Widget _buildProjectsList() {
+    if (loadingProjects) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            "Users",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+        const SizedBox(height: 15),
+        const Text(
+          "Projects",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        ...dummyUsers.map(
-          (user) => Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
+        const SizedBox(height: 10),
+
+        ...projects.map((project) {
+          return Card(
+            elevation: 3,
             child: ListTile(
-              title: Text(user["name"]!),
-              subtitle: Text("${user["email"]} • ${user["role"]}"),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit, color: Colors.orange),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Edit User"),
-                      content: Text("Edit user: ${user["name"]}"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Cancel"),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Save"),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              title: Text(project.projectName),
+              subtitle: Text(project.description),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TaskPage(projectId: project.projectId),
+                  ),
+                );
+              },
             ),
-          ),
-        ),
+          );
+        }).toList(),
       ],
     );
   }
 
+  // =============================
+  // PAGE UI
+  // =============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Task Management"),
+        title: const Text("Admin Dashboard"),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -177,16 +222,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
         child: ListView(
           children: [
             _buildSummaryCards(),
-            const SizedBox(height: 17),
-            _buildUsersList(),
+            const SizedBox(height: 20),
+            _buildProjectsList(),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
       ),
     );
   }

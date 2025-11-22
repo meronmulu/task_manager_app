@@ -6,7 +6,11 @@ import 'package:task_manager_app/features/auth/presentation/pages/manager/manage
 import 'package:task_manager_app/features/auth/presentation/pages/users_add.dart';
 import 'package:task_manager_app/features/auth/presentation/pages/users_page.dart';
 import 'package:task_manager_app/features/project/presentation/page/add_project.dart';
+import 'package:task_manager_app/features/project/presentation/page/edit_project.dart';
 import 'package:task_manager_app/features/project/presentation/page/projects_page.dart';
+import 'package:task_manager_app/features/tasks/presentation/page/add_task.dart';
+import 'package:task_manager_app/features/tasks/presentation/page/edit_task.dart';
+import 'package:task_manager_app/features/tasks/presentation/page/task_page.dart';
 
 class AppRoutes {
   static const login = "/login";
@@ -19,6 +23,9 @@ class AppRoutes {
   static const project = "/projects";
   static const addProject = "/add_project";
   static const editProject = "/edit_project";
+  static const task = "/tasks";
+  static const addTask = "/add_task";
+  static const editTask = "/edit_task";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -45,6 +52,13 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProjectsPage());
       case addProject:
         return MaterialPageRoute(builder: (_) => const ProjectAdd());
+
+      case task:
+        return MaterialPageRoute(builder: (_) => const TaskPage());
+      case addTask:
+        return MaterialPageRoute(builder: (_) => const AddTask());
+      case editTask:
+        return MaterialPageRoute(builder: (_) => const EditTask());
 
       default:
         return MaterialPageRoute(

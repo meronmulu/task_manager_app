@@ -16,13 +16,13 @@ class TaskModel extends TaskEntity {
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     return TaskModel(
-      taskId: json['taskId'],
+      taskId: json['task_id'] ?? 0,
       title: json['title'],
       description: json['description'],
       status: json['status'],
       priority: json['priority'],
       projectId: json['projectId'],
-      assignedToId: json['assignedTo'],
+      assignedToId: json['assignedToId'],
       dueDate: DateTime.parse(json['dueDate']),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
@@ -30,6 +30,7 @@ class TaskModel extends TaskEntity {
   }
 
   Map<String, dynamic> toJson() => {
+    "task_id": taskId,
     "title": title,
     "description": description,
     "status": status,

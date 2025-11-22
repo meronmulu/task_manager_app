@@ -36,3 +36,12 @@ class ProjectsLoaded extends ProjectState {
   @override
   List<Object?> get props => [projects];
 }
+
+class ProjectDeleted extends ProjectState {
+  final int projectId;
+
+  ProjectDeleted(this.projectId);
+
+  @override
+  List<Object?> get props => [projectId];
+}

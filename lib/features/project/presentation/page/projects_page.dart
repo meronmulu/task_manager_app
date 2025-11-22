@@ -132,34 +132,83 @@ class _ProjectsPageState extends State<ProjectsPage> {
                                 ),
                               ),
                               subtitle: Text(project.description),
-                              trailing: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => BlocProvider.value(
-                                        value: context.read<ProjectBloc>(),
-                                        child: EditProject(
-                                          projectId: project.projectId,
-                                          name: project.projectName,
-                                          description: project.description,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<ProjectBloc>(),
+                                            child: EditProjectPage(
+                                              projectId: project.projectId,
+                                              name: project.projectName,
+                                              description: project.description,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      );
+                                    },
+                                    child: const Icon(
+                                      Icons.edit,
+                                      size: 20,
+                                      color: Colors.blue,
                                     ),
-                                  );
-                                },
-                                child: const Icon(
-                                  Icons.edit,
-                                  size: 20,
-                                  color: Colors.blue,
-                                ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text("Delete Project"),
+                                          content: const Text(
+                                            "Are you sure you want to delete this project?",
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(ctx).pop();
+                                              },
+                                              child: const Text("Cancel"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                context.read<ProjectBloc>().add(
+                                                  DeleteProjectRequested(
+                                                    projectId:
+                                                        project.projectId,
+                                                  ),
+                                                );
+                                                Navigator.of(ctx).pop();
+                                              },
+                                              child: const Text(
+                                                "Delete",
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: const Icon(
+                                      Icons.delete,
+                                      size: 20,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
                               ),
-
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const TaskPage(),
+                                    builder: (_) =>
+                                        TaskPage(projectId: project.projectId),
                                   ),
                                 );
                               },

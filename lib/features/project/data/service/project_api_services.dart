@@ -13,7 +13,6 @@ class ProjectApiService {
     ),
   );
 
-  // Get all projects (requires token)
   Future<List<ProjectModel>> getAllProject() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
@@ -90,6 +89,24 @@ class ProjectApiService {
       return ProjectModel.fromJson(ProjectJson);
     } else {
       throw Exception("Failed to edit project: ${response.statusMessage}");
+    }
+  }
+
+  Future<void> deleteProject({required int projectId}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null) {
+      throw Exception("Token not found. Please login first!");
+    }
+
+    final response = await _dio.delete(
+      "/projects/delete-project/$projectId",
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to delete project: ${response.statusMessage}");
     }
   }
 }

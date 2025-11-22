@@ -10,6 +10,7 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     on<FetchAllProject>(_onFetchAllProject);
     on<AddProjectRequested>(_onAddProjectRequested);
     on<EditProjectRequested>(_onEditProjectRequested);
+    on<DeleteProjectRequested>(_onDeleteProjectRequested);
   }
 
   Future<void> _onFetchAllProject(
@@ -55,6 +56,22 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
         status: event.status,
       );
       emit(ProjectSuccess(updatedProject));
+    } catch (e) {
+      emit(ProjectFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteProjectRequested(
+    DeleteProjectRequested event,
+    Emitter<ProjectState> emit,
+  ) async {
+    emit(ProjectLoading());
+    try {
+      await repository.deleteProject(event.projectId);
+
+      // Fetch updated list after delete
+      final updatedProjects = await repository.getAllProject();
+      emit(ProjectsLoaded(updatedProjects));
     } catch (e) {
       emit(ProjectFailure(e.toString()));
     }

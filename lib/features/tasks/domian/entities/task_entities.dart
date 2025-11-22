@@ -4,8 +4,8 @@ class TaskEntity {
   final String? description;
   final String status;
   final String priority;
-  final int projectId;
-  final int assignedToId;
+  final int? projectId;
+  final int? assignedToId;
   final DateTime dueDate;
   final DateTime createdAt;
   final DateTime updatedAt;

@@ -4,12 +4,12 @@ import 'package:task_manager_app/features/project/presentation/bloc/project_bloc
 import 'package:task_manager_app/features/project/presentation/bloc/project_event.dart';
 import 'package:task_manager_app/features/project/presentation/bloc/project_state.dart';
 
-class EditProject extends StatefulWidget {
+class EditProjectPage extends StatefulWidget {
   final int projectId;
   final String name;
   final String description;
 
-  const EditProject({
+  const EditProjectPage({
     super.key,
     required this.projectId,
     required this.name,
@@ -17,12 +17,11 @@ class EditProject extends StatefulWidget {
   });
 
   @override
-  State<EditProject> createState() => _EditProjectState();
+  State<EditProjectPage> createState() => _EditProjectPageState();
 }
 
-class _EditProjectState extends State<EditProject> {
+class _EditProjectPageState extends State<EditProjectPage> {
   final _formKey = GlobalKey<FormState>();
-
   late TextEditingController nameController;
   late TextEditingController descriptionController;
 
@@ -40,14 +39,14 @@ class _EditProjectState extends State<EditProject> {
     super.dispose();
   }
 
-  void saveProject() {
+  void _updateProject() {
     if (_formKey.currentState!.validate()) {
       context.read<ProjectBloc>().add(
         EditProjectRequested(
           projectId: widget.projectId,
           projectName: nameController.text,
           description: descriptionController.text,
-          status: "ACTIVE", // or your actual status
+          status: "COMPLETED",
         ),
       );
     }
@@ -58,23 +57,19 @@ class _EditProjectState extends State<EditProject> {
     return BlocListener<ProjectBloc, ProjectState>(
       listener: (context, state) {
         if (state is ProjectSuccess) {
+          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Project updated successfully"),
-              backgroundColor: Colors.green,
-            ),
+            const SnackBar(content: Text("Project Updated Successfully")),
           );
 
-          // Reload projects after update
+          // Refresh project list
           context.read<ProjectBloc>().add(FetchAllProject());
 
-          Navigator.pop(context);
-        }
-
-        if (state is ProjectFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error), backgroundColor: Colors.red),
-          );
+          Navigator.pop(context); // Go back to project list
+        } else if (state is ProjectFailure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Error: ${state.error}")));
         }
       },
       child: Scaffold(
@@ -85,69 +80,38 @@ class _EditProjectState extends State<EditProject> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
-            child: ListView(
+            child: Column(
               children: [
-                const Text(
-                  "Project Name",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
                 TextFormField(
                   controller: nameController,
-                  decoration: InputDecoration(
-                    hintText: "Enter project name",
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  decoration: const InputDecoration(
+                    labelText: "Project Name",
+                    border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? "Project name is required" : null,
+                      value == null || value.isEmpty ? "Required" : null,
                 ),
-
                 const SizedBox(height: 20),
-
-                const Text(
-                  "Description",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
                 TextFormField(
                   controller: descriptionController,
                   maxLines: 4,
-                  decoration: InputDecoration(
-                    hintText: "Enter description",
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  decoration: const InputDecoration(
+                    labelText: "Description",
+                    border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? "Description is required" : null,
+                      value == null || value.isEmpty ? "Required" : null,
                 ),
-
                 const SizedBox(height: 30),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: saveProject,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "Save Changes",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                    onPressed: _updateProject,
+                    child: const Text("Save Changes"),
                   ),
                 ),
               ],

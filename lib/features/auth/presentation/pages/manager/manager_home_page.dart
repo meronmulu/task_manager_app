@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:task_manager_app/features/auth/data/service/dashboard_api_service.dart';
+import 'package:task_manager_app/features/auth/presentation/pages/login_page.dart';
+import 'package:task_manager_app/features/auth/presentation/pages/users_page.dart';
+import 'package:task_manager_app/features/project/data/model/project_model.dart';
+import 'package:task_manager_app/features/project/data/service/project_api_services.dart';
+import 'package:task_manager_app/features/project/presentation/page/projects_page.dart';
+import 'package:task_manager_app/features/tasks/presentation/page/task_page.dart';
 
 class ManagerHomePage extends StatefulWidget {
   const ManagerHomePage({super.key});
@@ -8,7 +16,49 @@ class ManagerHomePage extends StatefulWidget {
 }
 
 class _ManagerHomePageState extends State<ManagerHomePage> {
-  // Sidebar Drawer
+  int totalProjects = 0;
+  int totalTasks = 0;
+  bool loadingSummary = true;
+
+  List<ProjectModel> projects = [];
+  bool loadingProjects = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSummary();
+    fetchProjects();
+  }
+
+  void fetchSummary() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
+      final data = await DashboardService().getSummary(token!);
+
+      setState(() {
+        totalProjects = data["totalProjects"];
+        totalTasks = data["totalTasks"];
+        loadingSummary = false;
+      });
+    } catch (e) {
+      print("Summary load error: $e");
+    }
+  }
+
+  void fetchProjects() async {
+    try {
+      final data = await ProjectApiService().getAllProject();
+      setState(() {
+        projects = data;
+        loadingProjects = false;
+      });
+    } catch (e) {
+      print("Project load error: $e");
+    }
+  }
+
   Drawer _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
@@ -22,26 +72,42 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
                 Icon(Icons.admin_panel_settings, color: Colors.white, size: 40),
                 SizedBox(height: 8),
                 Text(
-                  "Admin Menu",
+                  "Manager Menu",
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ],
             ),
           ),
+
           ListTile(
             leading: const Icon(Icons.folder),
-            title: const Text('Projects'),
-            onTap: () {},
+            title: const Text("Projects"),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProjectsPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.task),
-            title: const Text('Tasks'),
-            onTap: () {},
+            title: const Text("Tasks"),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TaskPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {},
+            title: const Text("Logout"),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+              );
+            },
           ),
         ],
       ),
@@ -49,11 +115,15 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
   }
 
   Widget _buildSummaryCards() {
+    if (loadingSummary) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildCard("Projects", "10", Icons.folder, Colors.green),
-        _buildCard("Tasks", "40", Icons.task, Colors.orange),
+        _buildCard("Projects", "$totalProjects", Icons.folder, Colors.green),
+        _buildCard("Tasks", "$totalTasks", Icons.task, Colors.orange),
       ],
     );
   }
@@ -62,9 +132,7 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
     return Expanded(
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -80,30 +148,36 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
     );
   }
 
-  Widget _buildRecentProjects() {
-    final projects = [
-      {"name": "Website Revamp", "status": "In Progress"},
-      {"name": "Mobile App UI", "status": "Completed"},
-      {"name": "Marketing Tool", "status": "Pending"},
-    ];
+  Widget _buildProjectsList() {
+    if (loadingProjects) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            "Recent Projects",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+        const SizedBox(height: 15),
+        const Text(
+          "Projects",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        ...projects.map((proj) {
+        const SizedBox(height: 10),
+
+        ...projects.map((project) {
           return Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
+            elevation: 3,
             child: ListTile(
-              title: Text(proj["name"]!),
-              subtitle: Text("Status: ${proj["status"]!}"),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              title: Text(project.projectName),
+              subtitle: Text(project.description),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TaskPage(projectId: project.projectId),
+                  ),
+                );
+              },
             ),
           );
         }),
@@ -115,31 +189,28 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Task Management"),
+        title: const Text(
+          "Manager Dashboard",
+          style: TextStyle(color: Colors.white),
+        ),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        backgroundColor: Colors.blueAccent,
       ),
       drawer: _buildDrawer(context),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
             _buildSummaryCards(),
-            SizedBox(height: 17),
-            _buildRecentProjects(),
+            const SizedBox(height: 20),
+            _buildProjectsList(),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
       ),
     );
   }
